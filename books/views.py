@@ -20,4 +20,8 @@ def category_list(request):
         else:
             return Response(serialized_data.errors)
         
+@api_view()
+def test(request):
+    return Response({"message": "welcome"})
+        
 
