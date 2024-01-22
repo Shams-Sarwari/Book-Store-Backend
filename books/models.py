@@ -31,6 +31,8 @@ class Book(models.Model):
     best_seller = models.BooleanField(default=False)
     created = models.DateField(auto_now_add=True)
     update = models.DateField(auto_now=True)
+    
+    
 
     def __str__(self) -> str:
         return self.title
