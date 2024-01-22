@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     # custom apps:
     'books.apps.BooksConfig',
     'accounts.apps.AccountsConfig',
+    'orders.apps.OrdersConfig',
     
 
     # 3rd parties:

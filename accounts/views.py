@@ -15,7 +15,7 @@ def profile_list(reqeust):
         serialized_data = ProfileSerializer(queryset, many=True)
         return Response(serialized_data.data)
     
-@api_view(['GET', 'PUT'])
+@api_view(['GET', 'PUT', 'DELETE'])
 def profile_detail(request, pk):
     profile = get_object_or_404(Profile, id=pk)
     if request.method == 'GET':
@@ -29,3 +29,7 @@ def profile_detail(request, pk):
             return Response({'message': 'successful'}, status=status.HTTP_200_OK)
         else:
             return Response(serialized_data.errors)
+        
+    if request.method == 'DELETE':
+        profile.delete()
+        return Response({'message': 'successful'}, status=status.HTTP_200_OK)

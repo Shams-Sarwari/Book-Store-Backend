@@ -1,4 +1,5 @@
 from django.db import models
+from accounts.models import Profile
 
 # Create your models here.
 class Author(models.Model):
@@ -53,3 +54,18 @@ class Image(models.Model):
     alt_text = models.CharField(max_length=100,blank=True, null=True)
     url = models.ImageField(upload_to='media/book_images')
     book_line = models.ForeignKey(BookLine, on_delete=models.CASCADE)
+
+
+class Review(models.Model):
+    comment = models.TextField(blank=True, null=True)
+    rate = models.PositiveSmallIntegerField(default=1)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+
+    def __str__(self) -> str:
+        return self.rate
+
+
+
+
+
