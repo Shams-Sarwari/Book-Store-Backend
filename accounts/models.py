@@ -25,9 +25,13 @@ class CustomUserManager(UserManager):
         return self._create_user(email, password, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin):
+    GENDER_TYPE = (
+        ('male', 'Male'),
+        ('female', 'Female'),
+    )
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=255,blank=True, null=True)
-    gender = models.CharField(max_length=10,blank=True, null=True)
+    gender = models.CharField(max_length=10,blank=True, null=True, choices=GENDER_TYPE)
 
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
@@ -51,8 +55,21 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
     
 
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    first_name = models.CharField(max_length=255)
+    province = models.CharField(max_length=255,blank=True, null=True)
+    district = models.CharField(max_length=255,blank=True, null=True)
+    last_name = models.CharField(max_length=255)
+    contact = models.CharField(max_length=20)
+    avatar = models.ImageField(default='avatar.jpg', upload_to='avatar_pictures')
+    created = models.DateTimeField(auto_now_add=True)
 
-    
+    def __str__(self) -> str:
+        return self.user.email
+
+
+
 
 
 
