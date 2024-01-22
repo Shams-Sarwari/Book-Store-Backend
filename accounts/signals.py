@@ -5,6 +5,12 @@ from .models import User, Profile
 
 @receiver(post_save, sender=User)
 def create_profile(sender, instance=None, created=False, **kwargs):
-    print('inside signal')
     if created:
         Profile.objects.create(user=instance)
+
+
+@receiver(post_delete, sender=Profile)
+def delete_user(sender, instance=None, created=None, **kwargs):
+    user = instance.user
+    user.delete()
+    
