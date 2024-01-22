@@ -47,7 +47,10 @@ INSTALLED_APPS = [
     # 3rd parties:
     'rest_framework',
     'corsheaders',
+
 ]
+
+AUTH_USER_MODEL = 'accounts.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -93,7 +96,7 @@ DATABASES = {
     }
 }
 
-DATABASES['default'] = dj_database_url.parse("postgres://bookstore_2g7k_user:rK7OF2WxcDzkUrHojm5d06Ys8AnKQ4IJ@dpg-cmmav3ocmk4c73e10up0-a.oregon-postgres.render.com/bookstore_2g7k")
+DATABASES['default'] = dj_database_url.parse("postgres://bookstore_y1io_user:zBzGxVDbW1SGWRl9cp68jqBMzbdDu4Bp@dpg-cmmfcka1hbls73cfl30g-a.oregon-postgres.render.com/bookstore_y1io")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
