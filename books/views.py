@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -31,7 +32,7 @@ def book_list(request):
         queryset = Book.objects.all()
         serialized_data = BookSerializer(queryset, many=True)
         return Response(serialized_data.data)
-        
+
 
 @api_view(['GET'])
 def bookline_list(request):
@@ -39,4 +40,30 @@ def bookline_list(request):
         queryset = BookLine.objects.filter(add_to_page=True)
         serialized_data = BookLineSerializer(queryset, many=True)
         return Response(serialized_data.data)
+    
+@api_view(['GET'])
+def bookline_detail(request, pk):
+    queryset = get_object_or_404(BookLine, id=pk)
+    if request.method == 'GET':
+        serialized_data = BookLineDetailSerializer(queryset)
+        return Response(serialized_data.data)
+
+@api_view(['GET'])
+def related_books(request, pk):
+    category = get_object_or_404(Category, id=pk)
+    booklines = BookLine.objects.filter(
+        Q(book__category=category) &
+        Q(add_to_page=True)
+        )
+    if len(booklines) < 10:
+        queryset = booklines
+    else:
+        queryset = booklines[0:10]
+
+    serialized_data = BookLineSerializer(queryset, many=True)
+    return Response(serialized_data.data)
+
+  
+    
+
     
