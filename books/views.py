@@ -33,3 +33,10 @@ def book_list(request):
         return Response(serialized_data.data)
         
 
+@api_view(['GET'])
+def bookline_list(request):
+    if request.method == 'GET':
+        queryset = BookLine.objects.filter(add_to_page=True)
+        serialized_data = BookLineSerializer(queryset, many=True)
+        return Response(serialized_data.data)
+    
