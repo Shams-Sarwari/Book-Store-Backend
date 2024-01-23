@@ -4,7 +4,7 @@ from .models import *
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
-        fields = '__all__'
+        fields = ['alt_text', 'url']
         
 
 class BookLineSerializer(serializers.ModelSerializer):
@@ -37,17 +37,21 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 class BookSerializer(serializers.ModelSerializer):
     author = AuthorSerializer()
-    category_name = serializers.CharField(source='cateogry.title')
+    category_name = serializers.CharField(source='category.title')
+    category_id = serializers.IntegerField(source='category.id')
+    
     class Meta:
         model = Book
-        fields = ['id', 'title', 'slug', 'description','category_name', 'pub_date', 'author', 'num_of_views', 'reading_age']
+        fields = ['id', 'title', 'slug', 'description','category_name', 'category_id',
+                   'pub_date', 'author', 'num_of_views', 'reading_age']
 
     
 class BookLineDetailSerializer(serializers.ModelSerializer):
     book = BookSerializer()
+    images = ImageSerializer(many=True)
     class Meta:
         model = BookLine
-        fields = ['id','book', 'language', 'translator', 'price', 'stock_qty', 'num_of_pages']
+        fields = ['id','book', 'language', 'translator', 'price', 'stock_qty', 'num_of_pages', 'images']
     
 
 

@@ -24,7 +24,7 @@ class Book(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True)
     author = models.ForeignKey(Author, on_delete=models.PROTECT, related_name='author_book')
-    cateogry = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='category_book')
+    category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='category_book')
     description = models.TextField(blank=True, null=True)
     pub_date = models.DateField(auto_now_add=True)
     num_of_views = models.IntegerField(default=0)
