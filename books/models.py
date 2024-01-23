@@ -9,7 +9,7 @@ class Author(models.Model):
     about = models.TextField(blank=True, null=True)
 
     def __str__(self) -> str:
-        return self.name
+        return f'{self.name} {self.last_name}'
     
 class Category(models.Model):
     title = models.CharField(max_length=255)
@@ -44,8 +44,8 @@ class BookLine(models.Model):
     translator = models.CharField(max_length=255,blank=True, null=True)
     price = models.DecimalField(max_digits=5, decimal_places=2)
     stock_qty = models.IntegerField()
-    book = models.ForeignKey(Book, on_delete=models.PROTECT)
-
+    book = models.ForeignKey(Book, on_delete=models.PROTECT, related_name='booklines')
+    add_to_page = models.BooleanField(default=False)
     def __str__(self) -> str:
         return f'book line of {self.book.title}'
 
@@ -53,7 +53,10 @@ class BookLine(models.Model):
 class Image(models.Model):
     alt_text = models.CharField(max_length=100,blank=True, null=True)
     url = models.ImageField(upload_to='media/book_images')
-    book_line = models.ForeignKey(BookLine, on_delete=models.CASCADE)
+    book_line = models.ForeignKey(BookLine, on_delete=models.CASCADE, related_name='images')
+
+    def __str__(self) -> str:
+        return f'image for {self.book_line}'
 
 
 class Review(models.Model):

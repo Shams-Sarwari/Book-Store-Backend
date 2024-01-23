@@ -23,5 +23,20 @@ def category_list(request):
 @api_view()
 def test(request):
     return Response({"message": "welcome"})
+
+
+@api_view(['GET'])
+def book_list(request):
+    if request.method == 'GET':
+        queryset = Book.objects.all()
+        serialized_data = BookSerializer(queryset, many=True)
+        return Response(serialized_data.data)
         
 
+@api_view(['GET'])
+def bookline_list(request):
+    if request.method == 'GET':
+        queryset = BookLine.objects.filter(add_to_page=True)
+        serialized_data = BookLineSerializer(queryset, many=True)
+        return Response(serialized_data.data)
+    
