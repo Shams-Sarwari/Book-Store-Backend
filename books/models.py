@@ -56,7 +56,7 @@ class Book(models.Model):
         try:
             return sum(reviews)/num_of_reviews
         except: 
-            return None
+            return 0
 
 
 
