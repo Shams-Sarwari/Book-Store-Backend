@@ -15,6 +15,13 @@ class Category(models.Model):
     title = models.CharField(max_length=255)
     image = models.ImageField(upload_to='cateogry_images')
     description = models.TextField(blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created']
+        indexes = [
+            models.Index(fields=['-created'])
+        ]
 
     def __str__(self) -> str:
         return self.title
@@ -33,10 +40,24 @@ class Book(models.Model):
     created = models.DateField(auto_now_add=True)
     update = models.DateField(auto_now=True)
     
+    class Meta:
+        ordering = ['-created']
+        indexes = [
+            models.Index(fields=['-created'])
+        ]
     
 
     def __str__(self) -> str:
         return self.title
+    
+    def get_rating(self):
+        reviews = self.review_set.values_list('rate', flat=True)
+        num_of_reviews = len(reviews)
+        try:
+            return sum(reviews)/num_of_reviews
+        except: 
+            return 0
+
 
 
 class BookLine(models.Model):
@@ -47,6 +68,13 @@ class BookLine(models.Model):
     stock_qty = models.IntegerField()
     book = models.ForeignKey(Book, on_delete=models.PROTECT, related_name='booklines')
     add_to_page = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created']
+        indexes = [
+            models.Index(fields=['-created'])
+        ]
     def __str__(self) -> str:
         return f'book line of {self.book.title}'
 
@@ -65,9 +93,16 @@ class Review(models.Model):
     rate = models.PositiveSmallIntegerField(default=1)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created']
+        indexes = [
+            models.Index(fields=['-created'])
+        ]
 
     def __str__(self) -> str:
-        return self.rate
+        return str(self.rate)
 
 
 
