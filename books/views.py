@@ -64,6 +64,7 @@ def related_books(request, pk):
     return Response(serialized_data.data)
 
   
-    
-
-    
+# @api_view(['GET'])
+# def get_related_booklines(request, pk):
+#     bookline = get_object_or_404(BookLine, id=pk)
+#     book = bookline.book
