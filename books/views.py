@@ -2,8 +2,11 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+
+
 from .models import *
+from .permissions import AdminOrOwnerReview
 from .serializers import *
 
 # Create your views here.
@@ -71,3 +74,36 @@ def related_booklines(request, pk):
 
     serialized_data = BookLineSerializer(related_booklines, many=True)
     return Response(serialized_data.data)
+
+@api_view(['GET', 'POST'])
+def book_reviews(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    if request.method == 'GET':
+        reviews = Review.objects.filter(book=book)
+        serialized_data = ReviewSerializer(reviews, many=True)
+        return Response(serialized_data.data)
+    
+    if request.method == 'POST':
+        serialized_data = ReviewSerializer(data=request.data)
+        if serialized_data.is_valid():
+            serialized_data.save(profile=request.user.profile, book=book)
+            return Response({'message': 'review created successfully'}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serialized_data.errors)
+        
+    
+@api_view(['PATCH', 'DELETE'])
+@permission_classes([AdminOrOwnerReview])
+def review_detail(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    
+    if request.method == 'PATCH':
+        comment = request.data.get('comment')
+        if comment:
+            review.comment = comment
+            review.save()
+            return Response({'message': 'successully updated'}, status=status.HTTP_200_OK)
+
+        else:
+            return Response({'error': 'error occured'}, status=status.HTTP_400_BAD_REQUEST)
+        
