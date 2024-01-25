@@ -55,6 +55,14 @@ class BookLineDetailSerializer(serializers.ModelSerializer):
     
 
 class ReviewSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(source='profile.first_name', read_only=True)
+    last_name = serializers.CharField(source='profile.last_name', read_only=True)
+    
     class Meta:
         model = Review
-        fields = '__all__'
+        fields = ['id', 'first_name', 'last_name', 'comment', 'rate', 'created']
+
+    def validate_rate(self, value):
+        if value < 1 or value > 5:
+            raise serializers.ValidationError('rate should be between 1 and 5')
+        return value

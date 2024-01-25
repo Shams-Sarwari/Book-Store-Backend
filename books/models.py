@@ -93,6 +93,7 @@ class Review(models.Model):
     rate = models.PositiveSmallIntegerField(default=1)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:

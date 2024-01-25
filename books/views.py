@@ -72,13 +72,19 @@ def related_booklines(request, pk):
     serialized_data = BookLineSerializer(related_booklines, many=True)
     return Response(serialized_data.data)
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def book_reviews(request, pk):
     book = get_object_or_404(Book, id=pk)
     if request.method == 'GET':
         reviews = Review.objects.filter(book=book)
-        serialzied_data = ReviewSerializer(reviews, many=True)
-        return Response(serialzied_data.data)
+        serialized_data = ReviewSerializer(reviews, many=True)
+        return Response(serialized_data.data)
     
-        
+    if request.method == 'POST':
+        serialized_data = ReviewSerializer(data=request.data)
+        if serialized_data.is_valid():
+            serialized_data.save(profile=request.user.profile, book=book)
+            return Response({'message': 'review created successfully'}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serialized_data.errors)
         
