@@ -54,5 +54,7 @@ class BookLineDetailSerializer(serializers.ModelSerializer):
         fields = ['id','book', 'language', 'translator', 'price', 'stock_qty', 'num_of_pages', 'images']
     
 
-
-    
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = '__all__'

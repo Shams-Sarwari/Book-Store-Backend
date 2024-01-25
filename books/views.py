@@ -71,3 +71,14 @@ def related_booklines(request, pk):
 
     serialized_data = BookLineSerializer(related_booklines, many=True)
     return Response(serialized_data.data)
+
+@api_view(['GET'])
+def book_reviews(request, pk):
+    book = get_object_or_404(Book, id=pk)
+    if request.method == 'GET':
+        reviews = Review.objects.filter(book=book)
+        serialzied_data = ReviewSerializer(reviews, many=True)
+        return Response(serialzied_data.data)
+    
+        
+        
