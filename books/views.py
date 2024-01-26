@@ -96,14 +96,15 @@ def book_reviews(request, book_id):
 @permission_classes([AdminOrOwnerReview])
 def review_detail(request, review_id):
     review = get_object_or_404(Review, id=review_id)
-    
     if request.method == 'PATCH':
-        comment = request.data.get('comment')
-        if comment:
-            review.comment = comment
-            review.save()
-            return Response({'message': 'successully updated'}, status=status.HTTP_200_OK)
+        if request.user.is_superuser or request.user.profile == review.profile:
+            comment = request.data.get('comment')
+            if comment:
+                review.comment = comment
+                review.save()
+                return Response({'message': 'successully updated'}, status=status.HTTP_200_OK)
 
+            else:
+                return Response({'error': 'error occured'}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({'error': 'error occured'}, status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response({'message': 'You are not allowed to perform this action'}, status=status.HTTP_403_FORBIDDEN)
