@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -7,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import *
 from .permissions import AdminOrOwnerReview
 from .serializers import *
+from .utils import paginate_items
 
 
 # Create your views here.
@@ -42,6 +44,7 @@ def book_list(request):
 def bookline_list(request):
     if request.method == "GET":
         queryset = BookLine.objects.filter(add_to_page=True)
+        queryset = paginate_items(request, queryset, 1)
         serialized_data = BookLineSerializer(queryset, many=True)
         return Response(serialized_data.data)
 
