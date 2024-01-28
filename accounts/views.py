@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .models import Profile
-from .serializers import ProfileSerializer
+from .serializers import ProfileSerializer, UserSerializer
 
 
 # Create your views here.
@@ -34,6 +34,17 @@ def profile_detail(request, pk):
     if request.method == "DELETE":
         profile.delete()
         return Response({"message": "successful"}, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def register_user(request):
+    if request.method == "POST":
+        serialized_data = UserSerializer(data=request.data)
+        if serialized_data.is_valid():
+            serialized_data.save()
+            return Response(serialized_data.data)
+        else:
+            return Response(serialized_data.errors)
 
 
 @api_view(["POST"])
