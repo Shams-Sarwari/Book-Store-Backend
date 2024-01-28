@@ -2,9 +2,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 
 from .models import Profile
-from .serializers import ProfileSerializer
+from .serializers import ProfileSerializer, UserSerializer
 
 
 # Create your views here.
@@ -34,6 +35,20 @@ def profile_detail(request, pk):
     if request.method == "DELETE":
         profile.delete()
         return Response({"message": "successful"}, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def register_user(request):
+    if request.method == "POST":
+        serialized_data = UserSerializer(data=request.data)
+        data = {}
+        if serialized_data.is_valid():
+            user = serialized_data.save()
+            data["email"] = serialized_data.validated_data["email"]
+            data["token"] = get_object_or_404(Token, user=user).key
+            return Response(data)
+        else:
+            return Response(serialized_data.errors)
 
 
 @api_view(["POST"])
