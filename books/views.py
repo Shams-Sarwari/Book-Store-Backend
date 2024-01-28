@@ -44,7 +44,16 @@ def book_list(request):
 def bookline_list(request):
     if request.method == "GET":
         queryset = BookLine.objects.filter(add_to_page=True)
-        queryset = paginate_items(request, queryset, 1)
+        result = 8
+        query = request.query_params.get("query", None)
+        if query:
+            if query == "bestselling":
+                queryset = queryset.filter(book__best_seller=True)
+                result = 4
+            elif query == "mostviewed":
+                print("inside most")
+                queryset = queryset.order_by("-num_of_views")
+        queryset = paginate_items(request, queryset, result)
         serialized_data = BookLineSerializer(queryset, many=True)
         return Response(serialized_data.data)
 
