@@ -80,7 +80,7 @@ class BookLine(models.Model):
 
 class Image(models.Model):
     alt_text = models.CharField(max_length=100, blank=True, null=True)
-    url = models.ImageField(upload_to="media/book_images")
+    url = models.ImageField(upload_to="book_images")
     book_line = models.ForeignKey(
         BookLine, on_delete=models.CASCADE, related_name="images"
     )
