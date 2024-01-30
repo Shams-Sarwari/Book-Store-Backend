@@ -19,11 +19,20 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    password2 = serializers.CharField(write_only=True)
+
     class Meta:
         model = User
         fields = "__all__"
+        extra_kwargs = {
+            "password": {"write_only": True},
+        }
 
     def create(self, validated_data):
         email = validated_data["email"]
         password = validated_data["password"]
-        return User.objects.create_user(email=email, password=password)
+        password2 = validated_data["password2"]
+        if password == password2:
+            return User.objects.create_user(email=email, password=password)
+        else:
+            raise serializers.ValidationError("Passwords should be the same")
