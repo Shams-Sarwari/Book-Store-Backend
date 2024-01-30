@@ -8,22 +8,17 @@ from .serializers import *
 
 
 # Create your views here.
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
-def get_cart_items(request):
+def cart_items(request, bookline_id=None):
+    user_cart = get_object_or_404(Cart, profile=request.user.profile)
     if request.method == "GET":
-        queryset = get_object_or_404(Cart, profile=request.user.profile)
-        seriazlied_data = CartSerializer(queryset)
-        return Response(seriazlied_data.data)
+        queryset = CartItem.objects.filter(cart=user_cart)
+        serialized_data = CartItemSerializer(queryset, many=True)
+        return Response(serialized_data.data)
 
-
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def add_to_cart(request, bookline_id):
     if request.method == "POST":
-        user_cart = get_object_or_404(Cart, profile=request.user.profile)
         book_line = get_object_or_404(BookLine, id=bookline_id)
-
         serialized_data = CartItemSerializer(data=request.data)
         if serialized_data.is_valid():
             # check if the quantity has been sent from the user, if not set 1
@@ -52,3 +47,27 @@ def add_to_cart(request, bookline_id):
             )
         else:
             return Response(serialized_data.errors)
+
+
+@api_view(["DELETE", "PATCH"])
+def cart_item(request, cartitem_id):
+    cart_item = get_object_or_404(CartItem, id=cartitem_id)
+    if request.method == "DELETE":
+        cart_item.delete()
+        return Response(
+            {"message": "Item deleted successfully"}, status=status.HTTP_200_OK
+        )
+
+    if request.method == "PATCH":
+        quantity = request.data.get("quantity")
+        if quantity:
+            cart_item.quantity = quantity
+            cart_item.save()
+            return Response(
+                {"message": "Quantity changed successfully"}, status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {"error": "Please enter a vlid quantity number"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
