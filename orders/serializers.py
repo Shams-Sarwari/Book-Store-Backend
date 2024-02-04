@@ -18,3 +18,21 @@ class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = ["cart_items"]
+
+
+class WishlistItemsSerializer(serializers.ModelSerializer):
+    book = serializers.CharField(source="book_line.book.title", read_only=True)
+    language = serializers.CharField(source="book_line.language", read_only=True)
+    category = serializers.CharField(source="book_line.book.category", read_only=True)
+    price = serializers.CharField(source="book_line.price", read_only=True)
+
+    try:
+        image = serializers.ImageField(
+            source="book_line.images.first.url", read_only=True
+        )
+    except:
+        image = None
+
+    class Meta:
+        model = WishlistItem
+        fields = ["id", "book", "language", "category", "price", "image", "book_line"]
