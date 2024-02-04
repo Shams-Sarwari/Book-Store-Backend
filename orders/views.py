@@ -71,3 +71,37 @@ def cart_item(request, cartitem_id):
                 {"error": "Please enter a vlid quantity number"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def wishlist_items(request, bookline_id=None):
+    user_wishlist = request.user.profile.wishlist
+    if request.method == "GET":
+        items = WishlistItem.objects.filter(wishlist=user_wishlist)
+        serialized_data = WishlistItemsSerializer(items, many=True)
+        return Response(serialized_data.data)
+
+    if request.method == "POST":
+
+        bookline = get_object_or_404(BookLine, id=bookline_id)
+        # check if the user has already added item in the wish list
+        if bookline.id in WishlistItem.objects.filter(
+            wishlist=user_wishlist
+        ).values_list("book_line", flat=True):
+            return Response(
+                {"message": "Item is already in wishlist"}, status=status.HTTP_200_OK
+            )
+        else:
+            WishlistItem.objects.create(wishlist=user_wishlist, book_line=bookline)
+            return Response(
+                {"message": "Item added successfully"}, status=status.HTTP_201_CREATED
+            )
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def wishlist_item(reuqest, wishlistitem_id):
+    item = get_object_or_404(WishlistItem, id=wishlistitem_id)
+    item.delete()
+    return Response({"message": "item deleted sucessfully"}, status=status.HTTP_200_OK)
