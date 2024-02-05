@@ -102,4 +102,18 @@ class Review(models.Model):
         indexes = [models.Index(fields=["-created"])]
 
     def __str__(self) -> str:
-        return str(self.rate)
+        return f"comment from {self.profile}"
+
+
+class Reply(models.Model):
+    comment = models.TextField()
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="replies")
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created"]
+        indexes = [models.Index(fields=["-created"])]
+
+    def __str__(self) -> str:
+        return f"reply from {self.profile}"
