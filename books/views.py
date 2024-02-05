@@ -93,8 +93,8 @@ def related_booklines(request, pk):
 
 
 @api_view(["GET", "POST"])
-def book_reviews(request, book_id):
-    book = get_object_or_404(Book, id=book_id)
+def book_reviews(request, book_slug):
+    book = get_object_or_404(Book, slug=book_slug)
     if request.method == "GET":
         reviews = Review.objects.filter(book=book)
         serialized_data = ReviewSerializer(reviews, many=True)
@@ -142,3 +142,43 @@ def review_detail(request, review_id):
             {"message": "You are not allowed to perform this action"},
             status=status.HTTP_403_FORBIDDEN,
         )
+
+
+@api_view(["GET", "POST"])
+def replies(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    if request.method == "GET":
+        queryset = review.replies.all()
+        serialzied_data = ReplySerializer(queryset, many=True)
+        return Response(serialzied_data.data)
+
+    if request.method == "POST":
+        serialzied_data = ReplySerializer(data=request.data)
+        if serialzied_data.is_valid():
+            serialzied_data.save(profile=request.user.profile, review=review)
+            return Response(
+                {"message": "Reply created"}, status=status.HTTP_201_CREATED
+            )
+        else:
+            return Response(serialzied_data.errors)
+
+
+@api_view(["DELETE", "PATCH"])
+def reply(request, reply_id):
+    reply = get_object_or_404(Reply, id=reply_id)
+    if request.method == "DELETE":
+        reply.delete()
+        return Response({"message": "Reply deleted"}, status=status.HTTP_200_OK)
+
+    if request.method == "PATCH":
+        comment = request.data.get("comment")
+        if comment:
+            reply.comment = comment
+            reply.save()
+            return Response(
+                {"message": "Reply changed successfully"}, status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {"message": "Error occured"}, status=status.HTTP_400_BAD_REQUEST
+            )
