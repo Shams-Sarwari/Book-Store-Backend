@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "books.apps.BooksConfig",
     "accounts.apps.AccountsConfig",
     "orders.apps.OrdersConfig",
+    "blogs.apps.BlogsConfig",
     # 3rd parties:
     "rest_framework",
     "corsheaders",
