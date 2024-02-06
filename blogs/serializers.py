@@ -32,3 +32,40 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_num_of_reviews(self, obj):
         return len(obj.review_set.filter(active=True))
+
+
+class ReplySerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(source="profile.first_name", read_only=True)
+    last_name = serializers.CharField(source="profile.last_name", read_only=True)
+
+    class Meta:
+        model = Reply
+        fields = ["id", "first_name", "last_name", "comment", "created"]
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(source="profile.first_name", read_only=True)
+    last_name = serializers.CharField(source="profile.last_name", read_only=True)
+    post_replies = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Review
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "comment",
+            "rate",
+            "created",
+            "post_replies",
+        ]
+
+    def get_post_replies(self, obj):
+        queryset = obj.post_replies.all()[:3]
+        serialized_deta = ReplySerializer(queryset, many=True)
+        return serialized_deta.data
+
+    def validate_rate(self, value):
+        if value < 1 or value > 5:
+            raise serializers.ValidationError("rate should be between 1 and 5")
+        return value

@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import *
-from .serializers import PostSerializer
+from .serializers import PostSerializer, ReviewSerializer
 
 import uuid
 
@@ -39,7 +39,7 @@ def posts(request):
             return Response(serialized_data.errors)
 
 
-@api_view(["GET", "DELETE"])
+@api_view(["GET", "DELETE", "PATCH"])
 def post(request, post_slug):
     post = get_object_or_404(Post, slug=post_slug)
     if request.method == "GET":
@@ -49,3 +49,36 @@ def post(request, post_slug):
     if request.method == "DELETE":
         post.delete()
         return Response({"message": "Post deleted"}, status=status.HTTP_200_OK)
+
+    if request.method == "PATCH":
+        title = request.data.get("title")
+        body = request.data.get("body")
+
+        if title:
+            post.title = title
+
+        if body:
+            post.body = body
+
+        post.save()
+        return Response({"message": "Post changed"}, status=status.HTTP_200_OK)
+
+
+@api_view(["GET", "POST"])
+def post_reviews(request, post_slug):
+    post = get_object_or_404(Post, slug=post_slug)
+    if request.method == "GET":
+        reviews = Review.objects.filter(post=post)
+        serialized_data = ReviewSerializer(reviews, many=True)
+        return Response(serialized_data.data)
+
+    if request.method == "POST":
+        serialized_data = ReviewSerializer(data=request.data)
+        if serialized_data.is_valid():
+            serialized_data.save(profile=request.user.profile, post=post)
+            return Response(
+                {"message": "review created successfully"},
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            return Response(serialized_data.errors)
