@@ -16,6 +16,14 @@ class Post(models.Model):
         ordering = ["-created"]
         indexes = [models.Index(fields=["-created"])]
 
+    def get_rating(self):
+        reviews = self.review_set.values_list("rate", flat=True)
+        num_of_reviews = len(reviews)
+        try:
+            return sum(reviews) / num_of_reviews
+        except:
+            return 0
+
     def __str__(self) -> str:
         return self.title
 
