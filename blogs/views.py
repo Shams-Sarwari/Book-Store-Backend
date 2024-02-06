@@ -82,3 +82,27 @@ def post_reviews(request, post_slug):
             )
         else:
             return Response(serialized_data.errors)
+
+
+@api_view(["PATCH", "DELETE"])
+def review_detail(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    if request.method == "PATCH":
+        comment = request.data.get("comment")
+        if comment:
+            review.comment = comment
+            review.save()
+            return Response(
+                {"message": "successully updated"}, status=status.HTTP_200_OK
+            )
+
+        else:
+            return Response(
+                {"error": "error occured"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+    if request.method == "DELETE":
+        review.delete()
+        return Response(
+            {"message": "review deleted successfully"}, status=status.HTTP_200_OK
+        )

@@ -46,7 +46,7 @@ class ReplySerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source="profile.first_name", read_only=True)
     last_name = serializers.CharField(source="profile.last_name", read_only=True)
-    post_replies = serializers.SerializerMethodField()
+    replies = serializers.SerializerMethodField()
 
     class Meta:
         model = Review
@@ -57,10 +57,10 @@ class ReviewSerializer(serializers.ModelSerializer):
             "comment",
             "rate",
             "created",
-            "post_replies",
+            "replies",
         ]
 
-    def get_post_replies(self, obj):
+    def get_replies(self, obj):
         queryset = obj.post_replies.all()[:3]
         serialized_deta = ReplySerializer(queryset, many=True)
         return serialized_deta.data
