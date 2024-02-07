@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import *
-from .serializers import PostSerializer
+from .serializers import PostSerializer, ReviewSerializer, ReplySerializer
 
 import uuid
 
@@ -39,7 +39,7 @@ def posts(request):
             return Response(serialized_data.errors)
 
 
-@api_view(["GET", "DELETE"])
+@api_view(["GET", "DELETE", "PATCH"])
 def post(request, post_slug):
     post = get_object_or_404(Post, slug=post_slug)
     if request.method == "GET":
@@ -49,3 +49,101 @@ def post(request, post_slug):
     if request.method == "DELETE":
         post.delete()
         return Response({"message": "Post deleted"}, status=status.HTTP_200_OK)
+
+    if request.method == "PATCH":
+        title = request.data.get("title")
+        body = request.data.get("body")
+
+        if title:
+            post.title = title
+
+        if body:
+            post.body = body
+
+        post.save()
+        return Response({"message": "Post changed"}, status=status.HTTP_200_OK)
+
+
+@api_view(["GET", "POST"])
+def post_reviews(request, post_slug):
+    post = get_object_or_404(Post, slug=post_slug)
+    if request.method == "GET":
+        reviews = Review.objects.filter(post=post)
+        serialized_data = ReviewSerializer(reviews, many=True)
+        return Response(serialized_data.data)
+
+    if request.method == "POST":
+        serialized_data = ReviewSerializer(data=request.data)
+        if serialized_data.is_valid():
+            serialized_data.save(profile=request.user.profile, post=post)
+            return Response(
+                {"message": "review created successfully"},
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            return Response(serialized_data.errors)
+
+
+@api_view(["PATCH", "DELETE"])
+def review_detail(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    if request.method == "PATCH":
+        comment = request.data.get("comment")
+        if comment:
+            review.comment = comment
+            review.save()
+            return Response(
+                {"message": "successully updated"}, status=status.HTTP_200_OK
+            )
+
+        else:
+            return Response(
+                {"error": "error occured"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+    if request.method == "DELETE":
+        review.delete()
+        return Response(
+            {"message": "review deleted successfully"}, status=status.HTTP_200_OK
+        )
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def replies(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    if request.method == "GET":
+        queryset = review.post_replies.all()
+        serialzied_data = ReplySerializer(queryset, many=True)
+        return Response(serialzied_data.data)
+
+    if request.method == "POST":
+        serialzied_data = ReplySerializer(data=request.data)
+        if serialzied_data.is_valid():
+            serialzied_data.save(profile=request.user.profile, review=review)
+            return Response(
+                {"message": "Reply created"}, status=status.HTTP_201_CREATED
+            )
+        else:
+            return Response(serialzied_data.errors)
+
+
+@api_view(["DELETE", "PATCH"])
+def reply(request, reply_id):
+    reply = get_object_or_404(Reply, id=reply_id)
+    if request.method == "DELETE":
+        reply.delete()
+        return Response({"message": "Reply deleted"}, status=status.HTTP_200_OK)
+
+    if request.method == "PATCH":
+        comment = request.data.get("comment")
+        if comment:
+            reply.comment = comment
+            reply.save()
+            return Response(
+                {"message": "Reply changed successfully"}, status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {"message": "Error occured"}, status=status.HTTP_400_BAD_REQUEST
+            )
