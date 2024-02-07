@@ -2,6 +2,5 @@ env/
 */__pycache__/
 */migrations/
 mysite_data.json
-.env
 
 
