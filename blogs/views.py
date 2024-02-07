@@ -1,4 +1,5 @@
 from books.utils import paginate_items
+from django.contrib.postgres.search import SearchVector
 from django.shortcuts import get_object_or_404
 from django.utils.text import slugify
 from rest_framework import status
@@ -16,8 +17,13 @@ import uuid
 @permission_classes([IsAuthenticated])
 def posts(request):
     if request.method == "GET":
-
-        queryset = Post.objects.all()
+        search_text = request.query_params.get("search")
+        if search_text:
+            queryset = Post.objects.annotate(
+                search=SearchVector("title", "body")
+            ).filter(search=search_text)
+        else:
+            queryset = Post.objects.all()
         queryset = paginate_items(request, queryset, 6)
         serialized_data = PostSerializer(queryset, many=True)
         return Response(serialized_data.data)
