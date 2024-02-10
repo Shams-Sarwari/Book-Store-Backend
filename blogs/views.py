@@ -1,5 +1,4 @@
-from books.utils import paginate_items
-from django.contrib.postgres.search import SearchVector
+from books.utils import paginate_items, search_items
 from django.shortcuts import get_object_or_404
 from django.utils.text import slugify
 from rest_framework import status
@@ -19,9 +18,7 @@ def posts(request):
     if request.method == "GET":
         search_text = request.query_params.get("search")
         if search_text:
-            queryset = Post.objects.annotate(
-                search=SearchVector("title", "body")
-            ).filter(search=search_text)
+            queryset = search_items(search_text)
         else:
             queryset = Post.objects.all()
         queryset = paginate_items(request, queryset, 6)
@@ -33,6 +30,8 @@ def posts(request):
             slug = slugify(serialized_data.validated_data.get("title"))
             # check if the slug is already in the database if so make it unique
             slugs = Post.objects.values_list("slug", flat=True)
+
+            # accuracy loop for slug to ensure its unique
             while True:
                 if slug in slugs:
                     random_string = str(uuid.uuid4()).replace("-", "")
