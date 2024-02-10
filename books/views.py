@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import *
 from .permissions import AdminOrOwnerReview
 from .serializers import *
-from .utils import paginate_items
+from .utils import paginate_items, search_items
 
 
 # Create your views here.
@@ -43,7 +43,12 @@ def book_list(request):
 @api_view(["GET"])
 def bookline_list(request):
     if request.method == "GET":
-        queryset = BookLine.objects.filter(add_to_page=True)
+        search = request.query_params.get("search", None)
+        if search:
+            related_books = search_items(search, Book.objects.all())
+            queryset = BookLine.objects.filter(book__in=related_books, add_to_page=True)
+        else:
+            queryset = BookLine.objects.filter(add_to_page=True)
         result = 8
         query = request.query_params.get("query", None)
         if query:

@@ -1,4 +1,4 @@
-from books.utils import paginate_items, search_items
+from books.utils import paginate_items
 from django.shortcuts import get_object_or_404
 from django.utils.text import slugify
 from rest_framework import status
@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import *
 from .serializers import PostSerializer, ReviewSerializer, ReplySerializer
+from .utils import search_items
 
 import uuid
 
@@ -16,9 +17,9 @@ import uuid
 @permission_classes([IsAuthenticated])
 def posts(request):
     if request.method == "GET":
-        search_text = request.query_params.get("search")
+        search_text = request.query_params.get("search", None)
         if search_text:
-            queryset = search_items(search_text)
+            queryset = search_items(search_text, Post.objects.all())
         else:
             queryset = Post.objects.all()
         queryset = paginate_items(request, queryset, 6)
