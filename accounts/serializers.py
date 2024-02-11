@@ -36,3 +36,34 @@ class UserSerializer(serializers.ModelSerializer):
             return User.objects.create_user(email=email, password=password)
         else:
             raise serializers.ValidationError("Passwords should be the same")
+
+
+class PasswordChangeSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True)
+    password2 = serializers.CharField(write_only=True, required=True)
+    old_password = serializers.CharField(write_only=True, required=True)
+
+    class Meta:
+        model = User
+        fields = ["password", "password2", "old_password"]
+
+    def validate(self, attrs):
+        if attrs["password"] != attrs["password2"]:
+            raise serializers.ValidationError({"error": "passwords should be the same"})
+
+        return attrs
+
+    def validate_old_password(self, value):
+
+        user = self.context["request"].user
+        if not user.check_password(value):
+            raise serializers.ValidationError(
+                {"error": "Your old passowrd is not correct"}
+            )
+
+        return value
+
+    def update(self, instance, validated_data):
+        instance.set_password(validated_data["password"])
+        instance.save()
+        return instance
