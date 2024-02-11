@@ -1,11 +1,12 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 
 from .models import Profile
-from .serializers import ProfileSerializer, UserSerializer
+from .serializers import ProfileSerializer, UserSerializer, PasswordChangeSerializer
 
 
 # Create your views here.
@@ -60,3 +61,18 @@ def logout_user(request):
         return Response(
             {"error": "You are not logged in"}, status=status.HTTP_400_BAD_REQUEST
         )
+
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    serialized_data = PasswordChangeSerializer(
+        request.user, data=request.data, context={"request": request}
+    )
+    if serialized_data.is_valid():
+        serialized_data.save()
+        return Response(
+            {"message": "Passwrods changed successfully"}, status=status.HTTP_200_OK
+        )
+    else:
+        return Response(serialized_data.errors)
