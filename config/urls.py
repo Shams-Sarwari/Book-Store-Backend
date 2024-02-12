@@ -13,6 +13,10 @@ urlpatterns = [
     path("orders/", include("orders.urls")),
     path("posts/", include("blogs.urls")),
     path("api-auth/", include("rest_framework.urls")),
+    path(
+        "api/password_reset/",
+        include("django_rest_passwordreset.urls", namespace="password_reset"),
+    ),
     path("api/schema", SpectacularAPIView.as_view(), name="schema"),
     path("api/schema/docs", SpectacularSwaggerView.as_view(url_name="schema")),
     path("", test),
