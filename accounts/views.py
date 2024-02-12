@@ -1,3 +1,4 @@
+from books.utils import paginate_items
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -11,9 +12,10 @@ from .serializers import ProfileSerializer, UserSerializer, PasswordChangeSerial
 
 # Create your views here.
 @api_view(["GET"])
-def profile_list(reqeust):
-    if reqeust.method == "GET":
+def profile_list(request):
+    if request.method == "GET":
         queryset = Profile.objects.all()
+        queryset = paginate_items(request, queryset, 8)
         serialized_data = ProfileSerializer(queryset, many=True)
         return Response(serialized_data.data)
 
