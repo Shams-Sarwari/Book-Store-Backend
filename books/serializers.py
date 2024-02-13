@@ -29,7 +29,7 @@ class BookLineSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ["title", "image", "description"]
+        fields = ["id", "title", "image", "description"]
 
 
 class AuthorSerializer(serializers.ModelSerializer):
