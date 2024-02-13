@@ -16,6 +16,7 @@ from .utils import paginate_items, search_items
 def category_list(request):
     if request.method == "GET":
         cateogories = Category.objects.all()
+        cateogories = paginate_items(request, cateogories, 8)
         serialized_data = CategorySerializer(cateogories, many=True)
         return Response(serialized_data.data)
     if request.method == "POST":
@@ -25,6 +26,15 @@ def category_list(request):
             return Response(serialized_data.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serialized_data.errors)
+
+
+# this view returns books for specific category
+@api_view(["GET"])
+def category_books(request, category_id):
+    category = get_object_or_404(Category, id=category_id)
+    booklines = BookLine.objects.filter(book__category=category, add_to_page=True)
+    serialized_data = BookLineSerializer(booklines, many=True)
+    return Response(serialized_data.data)
 
 
 @api_view()
