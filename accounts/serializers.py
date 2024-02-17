@@ -1,6 +1,11 @@
 from rest_framework import serializers
+from rest_framework.exceptions import AuthenticationFailed
 from .models import Profile
 from accounts.models import User
+from .register import register_social_user
+
+import google
+import os
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -67,3 +72,23 @@ class PasswordChangeSerializer(serializers.ModelSerializer):
         instance.set_password(validated_data["password"])
         instance.save()
         return instance
+
+
+class GoogleSocialAuthSerializer(serializers.Serializer):
+    auth_token = serializers.CharField()
+
+    def validate_auth_token(self, auth_token):
+        user_data = google.Google.validate(auth_token)
+        try:
+            user_data["sub"]
+        except:
+            raise serializers.ValidationError("The token is invalid or expired")
+
+        if user_data["aud"] != os.getenv("SOCIAL_AUTH_GOOGLE_OAUTH2_KEY"):
+            raise AuthenticationFailed("oops who are you?")
+
+        user_id = user_data["sub"]
+        user_email = user_data["email"]
+        provider = "google"
+
+        return register_social_user(email=user_email, provider=provider)
