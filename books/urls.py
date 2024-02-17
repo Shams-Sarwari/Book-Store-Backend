@@ -12,5 +12,6 @@ urlpatterns = [
     path("reviews/<int:review_id>/replies", replies, name="replies"),
     path("replies/<int:reply_id>", reply, name="reply"),
     path("<int:pk>", bookline_detail, name="bookline"),
-    path("", bookline_list, name="booklines"),
+    path("booklines", bookline_list, name="booklines"),
+    path("booklines/<int:book_id>", bookline_list, name="booklines"),
 ]

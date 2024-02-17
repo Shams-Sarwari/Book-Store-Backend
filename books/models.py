@@ -37,7 +37,7 @@ class Book(models.Model):
         Category, on_delete=models.PROTECT, related_name="category_book"
     )
     description = models.TextField(blank=True, null=True)
-    pub_date = models.DateField(auto_now_add=True)
+    pub_date = models.DateField(null=True, blank=True)
     reading_age = models.CharField(max_length=100)
     best_seller = models.BooleanField(default=False)
     created = models.DateField(auto_now_add=True)

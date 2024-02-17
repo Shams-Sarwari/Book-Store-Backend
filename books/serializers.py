@@ -41,9 +41,11 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 
 class BookSerializer(serializers.ModelSerializer):
-    author = AuthorSerializer()
-    category_name = serializers.CharField(source="category.title")
+    author = AuthorSerializer(read_only=True)
+    author_id = serializers.IntegerField(write_only=True)
+    category_name = serializers.CharField(source="category.title", read_only=True)
     category_id = serializers.IntegerField(source="category.id")
+    slug = serializers.CharField(read_only=True)
 
     class Meta:
         model = Book
@@ -56,15 +58,16 @@ class BookSerializer(serializers.ModelSerializer):
             "category_id",
             "pub_date",
             "author",
-            "num_of_views",
             "reading_age",
             "get_rating",
+            "author_id",
         ]
 
 
 class BookLineDetailSerializer(serializers.ModelSerializer):
-    book = BookSerializer()
-    images = ImageSerializer(many=True)
+    book = BookSerializer(read_only=True)
+    images = ImageSerializer(many=True, read_only=True)
+    add_to_page = serializers.BooleanField(write_only=True)
 
     class Meta:
         model = BookLine
@@ -76,6 +79,7 @@ class BookLineDetailSerializer(serializers.ModelSerializer):
             "price",
             "stock_qty",
             "num_of_pages",
+            "add_to_page",
             "images",
         ]
 
