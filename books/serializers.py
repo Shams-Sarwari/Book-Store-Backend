@@ -65,8 +65,9 @@ class BookSerializer(serializers.ModelSerializer):
 
 
 class BookLineDetailSerializer(serializers.ModelSerializer):
-    book = BookSerializer()
-    images = ImageSerializer(many=True)
+    book = BookSerializer(read_only=True)
+    images = ImageSerializer(many=True, read_only=True)
+    add_to_page = serializers.BooleanField(write_only=True)
 
     class Meta:
         model = BookLine
@@ -78,6 +79,7 @@ class BookLineDetailSerializer(serializers.ModelSerializer):
             "price",
             "stock_qty",
             "num_of_pages",
+            "add_to_page",
             "images",
         ]
 

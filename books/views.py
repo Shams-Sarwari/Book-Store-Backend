@@ -80,8 +80,8 @@ def book_list(request):
             return Response(serialized_data.errors)
 
 
-@api_view(["GET"])
-def bookline_list(request):
+@api_view(["GET", "POST"])
+def bookline_list(request, book_id=None):
     if request.method == "GET":
         search = request.query_params.get("search", None)
         if search:
@@ -101,6 +101,23 @@ def bookline_list(request):
         queryset = paginate_items(request, queryset, result)
         serialized_data = BookLineSerializer(queryset, many=True)
         return Response(serialized_data.data)
+
+    if request.method == "POST":
+        if book_id:
+            book = get_object_or_404(Book, id=book_id)
+            serialized_data = BookLineDetailSerializer(data=request.data)
+            if serialized_data.is_valid():
+                serialized_data.save(book=book)
+                return Response(
+                    {"message": "Bookline created"}, status=status.HTTP_201_CREATED
+                )
+            else:
+                return Response(serialized_data.errors)
+        else:
+            return Response(
+                {"error": "Please provide id of related book"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 @api_view(["GET"])
