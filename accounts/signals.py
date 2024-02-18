@@ -1,8 +1,10 @@
 from django.db.models.signals import post_save, post_delete
+from django.contrib.auth.signals import user_logged_in
 from django.core.mail import EmailMultiAlternatives
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils import timezone
 from .models import User, Profile
 from orders.models import Cart, Wishlist
 from rest_framework.authtoken.models import Token
@@ -69,3 +71,11 @@ def password_reset_token_created(
     )
     # msg.attach_alternative(email_html_message, "text/html")
     msg.send()
+
+
+@receiver(user_logged_in)
+def update_user_last_login(sender, request, **kwargs):
+    print(f"{request.user} logged in {timezone.now()}")
+    request.user.last_login = timezone.now()
+    print(request.user.last_login)
+    request.user.save()

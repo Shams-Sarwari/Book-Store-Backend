@@ -75,7 +75,7 @@ def book_list(request):
                 else:
                     break
             serialized_data.save(author=author, category=category, slug=slug)
-            return Response({"message": "Book created"}, status=status.HTTP_201_CREATED)
+            return Response(serialized_data.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serialized_data.errors)
 

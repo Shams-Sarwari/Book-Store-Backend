@@ -1,5 +1,6 @@
 from django.urls import path, include
 from .views import *
+
 from rest_framework.authtoken.views import obtain_auth_token
 
 
@@ -11,4 +12,5 @@ urlpatterns = [
     path("logout", logout_user, name="logout"),
     path("password-change", change_password, name="password-change"),
     path("google/", GoogleSocialAuthView.as_view()),
+    path("user-count", total_users),
 ]
