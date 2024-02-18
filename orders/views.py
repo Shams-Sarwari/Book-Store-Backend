@@ -105,3 +105,15 @@ def wishlist_item(reuqest, wishlistitem_id):
     item = get_object_or_404(WishlistItem, id=wishlistitem_id)
     item.delete()
     return Response({"message": "item deleted sucessfully"}, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def orders(request):
+    query = request.query_params.get("filter")
+    if query:
+        if query == "pending":
+            queryset = Order.objects.filter(derlivered=False)
+    else:
+        queryset = Order.objects.all()
+    serialized_data = OrderSerializer(queryset, many=True)
+    return Response(serialized_data.data)
