@@ -67,6 +67,9 @@ class BookLine(models.Model):
     stock_qty = models.IntegerField()
     book = models.ForeignKey(Book, on_delete=models.PROTECT, related_name="booklines")
     add_to_page = models.BooleanField(default=False)
+    active = models.BooleanField(
+        default=True
+    )  # boolean field if the book line is in the stock
     num_of_views = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
 
