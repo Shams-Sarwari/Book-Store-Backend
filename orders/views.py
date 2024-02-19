@@ -26,6 +26,13 @@ def cart_items(request, bookline_id=None):
                 quantity = serialized_data.validated_data["quantity"]
             except:
                 quantity = 1
+            # the qunatity shouldn't be greater stock qty
+            if quantity > book_line.stock_qty:
+                return Response(
+                    {"error": "the inserted quantity is greated than stock quantity"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             # price will automatically set by the multiplication of quantity and item price
             price = quantity * book_line.price
 
@@ -61,6 +68,11 @@ def cart_item(request, cartitem_id):
     if request.method == "PATCH":
         quantity = request.data.get("quantity")
         if quantity:
+            if quantity > cart_item.book_line.stock_qty:
+                return Response(
+                    {"error": "The insereted number is greated than stock quantity"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             cart_item.quantity = quantity
             cart_item.save()
             return Response(
@@ -105,3 +117,58 @@ def wishlist_item(reuqest, wishlistitem_id):
     item = get_object_or_404(WishlistItem, id=wishlistitem_id)
     item.delete()
     return Response({"message": "item deleted sucessfully"}, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def orders(request):
+    query = request.query_params.get("filter")
+    if query:
+        if query == "pending":
+            queryset = Order.objects.filter(derlivered=False)
+    else:
+        queryset = Order.objects.all()
+    serialized_data = OrderSerializer(queryset, many=True)
+    return Response(serialized_data.data)
+
+
+@api_view(["POST"])
+def create_order(request):
+    cart_items = request.user.profile.cart.cart_items.all()
+    if request.method == "POST":
+        if cart_items.exists():
+            # check if the quantity of items in tha cart are less than stock qty
+            for item in cart_items:
+                if item.quantity > item.book_line.stock_qty:
+                    return Response(
+                        {
+                            "error": f"{item.book_line.book.title} quantity is more than stock quantity"
+                        }
+                    )
+
+            # create an order for the user and add order items based on cart items.
+            order = Order.objects.create(profile=request.user.profile)
+            for item in cart_items:
+                OrderItem.objects.create(
+                    order=order,
+                    book_line=item.book_line,
+                    quantity=item.quantity,
+                    price=item.price,
+                )
+                # change the total price of order based on order items
+                order.total_price += item.price
+                # reduce quantity of stock with each order
+                item.book_line.stock_qty -= item.quantity
+                # check if the stock quantity of a book line is 0 so remove for page
+                if item.book_line.stock_qty <= 0:
+                    item.active = False
+                item.book_line.save()
+                item.delete()
+            order.save()
+
+            return Response(
+                {"message": "Order created"}, status=status.HTTP_201_CREATED
+            )
+        else:
+            return Response(
+                {"message": "No item in the cart"}, status=status.HTTP_400_BAD_REQUEST
+            )

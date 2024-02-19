@@ -31,3 +31,29 @@ class WishlistItem(models.Model):
         Wishlist, on_delete=models.CASCADE, related_name="wishlistitems"
     )
     book_line = models.ForeignKey(BookLine, on_delete=models.CASCADE)
+
+
+class Order(models.Model):
+    profile = models.ForeignKey(
+        Profile, on_delete=models.CASCADE, related_name="orders"
+    )
+    total_price = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    derlivered = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created"]
+        indexes = [models.Index(fields=["created"])]
+
+    def __str__(self) -> str:
+        return f"order of {self.profile}"
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
+    book_line = models.ForeignKey(BookLine, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=5, decimal_places=2)
+
+    def __str__(self) -> str:
+        return f"order item for {self.order}"

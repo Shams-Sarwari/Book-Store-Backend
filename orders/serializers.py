@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from books.serializers import BookLineSerializer
 from .models import *
+from accounts.serializers import ProfileSerializer
 
 
 class CartItemSerializer(serializers.ModelSerializer):
@@ -36,3 +37,11 @@ class WishlistItemsSerializer(serializers.ModelSerializer):
     class Meta:
         model = WishlistItem
         fields = ["id", "book", "language", "category", "price", "image", "book_line"]
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer(read_only=True)
+
+    class Meta:
+        model = Order
+        fields = "__all__"

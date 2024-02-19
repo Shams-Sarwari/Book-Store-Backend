@@ -1,5 +1,8 @@
 from books.utils import paginate_items
+from datetime import date
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
@@ -7,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 
-from .models import Profile
+from .models import Profile, User
 from .serializers import (
     ProfileSerializer,
     UserSerializer,
@@ -103,3 +106,16 @@ class GoogleSocialAuthView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         data = (serializer.validated_data)["auth_token"]
         return Response(data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def total_users(request):
+    previous_users_count = User.objects.exclude(date_joined__date=date.today()).count()
+    all_users = User.objects.all().count()
+    return Response(
+        {
+            "previous_users_count": previous_users_count,
+            "all_users": all_users,
+        },
+        status=status.HTTP_200_OK,
+    )
