@@ -92,9 +92,9 @@ DATABASES = {
     }
 }
 
-DATABASES["default"] = dj_database_url.parse(
-    "postgres://bookstore_y1io_user:zBzGxVDbW1SGWRl9cp68jqBMzbdDu4Bp@dpg-cmmfcka1hbls73cfl30g-a.oregon-postgres.render.com/bookstore_y1io"
-)
+# DATABASES["default"] = dj_database_url.parse(
+#     "postgres://bookstore_y1io_user:zBzGxVDbW1SGWRl9cp68jqBMzbdDu4Bp@dpg-cmmfcka1hbls73cfl30g-a.oregon-postgres.render.com/bookstore_y1io"
+# )
 
 DATABASES = {
     "default": {
@@ -106,6 +106,16 @@ DATABASES = {
         "PORT": os.getenv("DB_PORT"),
     }
 }
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql_psycopg2",
+#         "NAME": "bookstore_db",
+#         "USER": "shams",
+#         "PASSWORD": "testpass",
+#         "HOST": "localhost",
+#         "PORT": "5432",
+#     }
+# }
 
 
 # Password validation
