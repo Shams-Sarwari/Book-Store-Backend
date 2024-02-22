@@ -37,7 +37,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=255, blank=True, null=True)
     gender = models.CharField(max_length=10, blank=True, null=True, choices=GENDER_TYPE)
-    provider = models.CharField(default="bookstroe")
+    provider = models.CharField(max_length=255, default="bookstroe")
 
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)

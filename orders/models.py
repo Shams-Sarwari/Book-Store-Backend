@@ -57,3 +57,15 @@ class OrderItem(models.Model):
 
     def __str__(self) -> str:
         return f"order item for {self.order}"
+
+
+class Address(models.Model):
+    order = models.OneToOneField(Order, on_delete=models.CASCADE)
+    country = models.CharField(max_length=255)
+    city = models.CharField(max_length=255)
+    address = models.TextField()
+    apartment_num = models.CharField(max_length=20)
+    postal_code = models.CharField(max_length=100)
+
+    def __str__(self) -> str:
+        return f"{self.city} | {self.country}"
