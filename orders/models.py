@@ -60,7 +60,9 @@ class OrderItem(models.Model):
 
 
 class Address(models.Model):
-    order = models.OneToOneField(Order, on_delete=models.CASCADE)
+    order = models.OneToOneField(
+        Order, on_delete=models.CASCADE, related_name="address"
+    )
     country = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
     address = models.TextField()

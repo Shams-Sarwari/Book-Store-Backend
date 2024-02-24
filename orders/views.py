@@ -131,6 +131,27 @@ def orders(request):
     return Response(serialized_data.data)
 
 
+@api_view(["GET", "PATCH"])
+def order(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    if request.method == "GET":
+        serialized_data = OrderSerializer(order)
+        return Response(serialized_data.data, status=status.HTTP_200_OK)
+
+    if request.method == "PATCH":
+        query = request.query_params.get("status")
+        if query == "delivered":
+            order.derlivered = True
+            order.save()
+            return Response(
+                {"message": "order marked as delivered"}, status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {"error": "bad request"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+
 @api_view(["POST"])
 def create_order(request):
     cart_items = request.user.profile.cart.cart_items.all()
@@ -172,3 +193,17 @@ def create_order(request):
             return Response(
                 {"message": "No item in the cart"}, status=status.HTTP_400_BAD_REQUEST
             )
+
+
+@api_view(["POST"])
+def address(request, order_id):
+    if request.method == "POST":
+        order = get_object_or_404(Order, id=order_id)
+        serialized_data = AddressSerializer(data=request.data)
+        if serialized_data.is_valid():
+            serialized_data.save(order=order)
+            return Response(
+                {"message": "Address added to order"}, status=status.HTTP_201_CREATED
+            )
+        else:
+            return Response(serialized_data.errors)
