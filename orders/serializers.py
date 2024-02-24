@@ -40,15 +40,15 @@ class WishlistItemsSerializer(serializers.ModelSerializer):
 
 
 class AddressSerializer(serializers.ModelSerializer):
-    order = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Address
-        fields = "__all__"
+        fields = ["city", "country", "address", "apartment_num", "postal_code"]
 
 
 class OrderSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(read_only=True)
+    address = AddressSerializer(read_only=True)
 
     class Meta:
         model = Order

@@ -131,6 +131,27 @@ def orders(request):
     return Response(serialized_data.data)
 
 
+@api_view(["GET", "PATCH"])
+def order(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    if request.method == "GET":
+        serialized_data = OrderSerializer(order)
+        return Response(serialized_data.data, status=status.HTTP_200_OK)
+
+    if request.method == "PATCH":
+        query = request.query_params.get("status")
+        if query == "delivered":
+            order.derlivered = True
+            order.save()
+            return Response(
+                {"message": "order marked as delivered"}, status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {"error": "bad request"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+
 @api_view(["POST"])
 def create_order(request):
     cart_items = request.user.profile.cart.cart_items.all()

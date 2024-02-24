@@ -9,6 +9,7 @@ urlpatterns = [
     path("wishlist/<int:bookline_id>", wishlist_items, name="wishlist-items"),
     path("wishlist-item/<int:wishlistitem_id>", wishlist_item, name="wishlist-item"),
     path("orders", orders, name="orders"),
+    path("orders/<int:order_id>", order, name="order"),
     path("create-order", create_order, name="create-order"),
     path(
         "address/<int:order_id>", address, name="create-order"
