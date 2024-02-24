@@ -172,3 +172,17 @@ def create_order(request):
             return Response(
                 {"message": "No item in the cart"}, status=status.HTTP_400_BAD_REQUEST
             )
+
+
+@api_view(["POST"])
+def address(request, order_id):
+    if request.method == "POST":
+        order = get_object_or_404(Order, id=order_id)
+        serialized_data = AddressSerializer(data=request.data)
+        if serialized_data.is_valid():
+            serialized_data.save(order=order)
+            return Response(
+                {"message": "Address added to order"}, status=status.HTTP_201_CREATED
+            )
+        else:
+            return Response(serialized_data.errors)

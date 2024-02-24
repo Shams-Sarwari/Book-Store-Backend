@@ -39,6 +39,14 @@ class WishlistItemsSerializer(serializers.ModelSerializer):
         fields = ["id", "book", "language", "category", "price", "image", "book_line"]
 
 
+class AddressSerializer(serializers.ModelSerializer):
+    order = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Address
+        fields = "__all__"
+
+
 class OrderSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(read_only=True)
 
