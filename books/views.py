@@ -5,9 +5,14 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .models import *
-from .permissions import AdminOrOwnerReview
+from .permissions import (
+    AdminOrReadOnly,
+    AuthenticatedOrReadOnly,
+    admin_owner_or_readonly_review,
+    admin_owner_or_readonly_reply,
+)
 from .serializers import *
 from .utils import paginate_items, search_items
 
@@ -16,6 +21,7 @@ import uuid
 
 # Create your views here.
 @api_view(["GET", "POST"])
+@permission_classes([AdminOrReadOnly])
 def category_list(request):
     if request.method == "GET":
         cateogories = Category.objects.all()
@@ -46,6 +52,7 @@ def test(request):
 
 
 @api_view(["GET", "POST"])
+@permission_classes([AdminOrReadOnly])
 def book_list(request):
     if request.method == "GET":
         queryset = Book.objects.all()
@@ -81,6 +88,7 @@ def book_list(request):
 
 
 @api_view(["GET", "POST"])
+@permission_classes([AdminOrReadOnly])
 def bookline_list(request, book_id=None):
     if request.method == "GET":
         search = request.query_params.get("search", None)
@@ -155,6 +163,7 @@ def related_booklines(request, pk):
 
 
 @api_view(["GET", "POST"])
+@permission_classes([AuthenticatedOrReadOnly])
 def book_reviews(request, book_slug):
     book = get_object_or_404(Book, slug=book_slug)
     if request.method == "GET":
@@ -175,7 +184,7 @@ def book_reviews(request, book_slug):
 
 
 @api_view(["PATCH", "DELETE"])
-@permission_classes([AdminOrOwnerReview])
+@admin_owner_or_readonly_review
 def review_detail(request, review_id):
     review = get_object_or_404(Review, id=review_id)
     if request.user.is_superuser or request.user.profile == review.profile:
@@ -207,6 +216,7 @@ def review_detail(request, review_id):
 
 
 @api_view(["GET", "POST"])
+@permission_classes([AuthenticatedOrReadOnly])
 def replies(request, review_id):
     review = get_object_or_404(Review, id=review_id)
     if request.method == "GET":
@@ -226,6 +236,7 @@ def replies(request, review_id):
 
 
 @api_view(["DELETE", "PATCH"])
+@admin_owner_or_readonly_reply
 def reply(request, reply_id):
     reply = get_object_or_404(Reply, id=reply_id)
     if request.method == "DELETE":
