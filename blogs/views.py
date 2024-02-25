@@ -6,6 +6,12 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import *
+from .permissions import (
+    AuthenticatedOrReadOnly,
+    admin_owner_or_readonly_post,
+    admin_owner_or_readonly_comment,
+    admin_owner_or_readonly_reply,
+)
 from .serializers import PostSerializer, ReviewSerializer, ReplySerializer
 from .utils import search_items
 
@@ -14,7 +20,7 @@ import uuid
 
 # Create your views here.
 @api_view(["GET", "POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([AuthenticatedOrReadOnly])
 def posts(request):
     if request.method == "GET":
         search_text = request.query_params.get("search", None)
@@ -46,6 +52,7 @@ def posts(request):
 
 
 @api_view(["GET", "DELETE", "PATCH"])
+@admin_owner_or_readonly_post
 def post(request, post_slug):
     post = get_object_or_404(Post, slug=post_slug)
     if request.method == "GET":
@@ -71,6 +78,7 @@ def post(request, post_slug):
 
 
 @api_view(["GET", "POST"])
+@permission_classes([AuthenticatedOrReadOnly])
 def post_reviews(request, post_slug):
     post = get_object_or_404(Post, slug=post_slug)
     if request.method == "GET":
@@ -91,6 +99,7 @@ def post_reviews(request, post_slug):
 
 
 @api_view(["PATCH", "DELETE"])
+@admin_owner_or_readonly_comment
 def review_detail(request, review_id):
     review = get_object_or_404(Review, id=review_id)
     if request.method == "PATCH":
@@ -135,6 +144,7 @@ def replies(request, review_id):
 
 
 @api_view(["DELETE", "PATCH"])
+@admin_owner_or_readonly_reply
 def reply(request, reply_id):
     reply = get_object_or_404(Reply, id=reply_id)
     if request.method == "DELETE":
