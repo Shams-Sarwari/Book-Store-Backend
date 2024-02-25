@@ -1,10 +1,11 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from .models import *
 from .serializers import *
+from .permissions import is_cart_owner, is_wishlist_owner
 
 
 # Create your views here.
@@ -57,6 +58,7 @@ def cart_items(request, bookline_id=None):
 
 
 @api_view(["DELETE", "PATCH"])
+@is_cart_owner
 def cart_item(request, cartitem_id):
     cart_item = get_object_or_404(CartItem, id=cartitem_id)
     if request.method == "DELETE":
@@ -67,6 +69,8 @@ def cart_item(request, cartitem_id):
 
     if request.method == "PATCH":
         quantity = request.data.get("quantity")
+        if quantity:
+            quantity = int(quantity)
         if quantity:
             if quantity > cart_item.book_line.stock_qty:
                 return Response(
@@ -112,7 +116,7 @@ def wishlist_items(request, bookline_id=None):
 
 
 @api_view(["DELETE"])
-@permission_classes([IsAuthenticated])
+@is_wishlist_owner
 def wishlist_item(reuqest, wishlistitem_id):
     item = get_object_or_404(WishlistItem, id=wishlistitem_id)
     item.delete()
@@ -120,6 +124,7 @@ def wishlist_item(reuqest, wishlistitem_id):
 
 
 @api_view(["GET"])
+@permission_classes([IsAdminUser])
 def orders(request):
     query = request.query_params.get("filter")
     if query:
@@ -132,6 +137,7 @@ def orders(request):
 
 
 @api_view(["GET", "PATCH"])
+@permission_classes([IsAdminUser])
 def order(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     if request.method == "GET":
@@ -153,6 +159,7 @@ def order(request, order_id):
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def create_order(request):
     cart_items = request.user.profile.cart.cart_items.all()
     if request.method == "POST":
@@ -196,6 +203,7 @@ def create_order(request):
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def address(request, order_id):
     if request.method == "POST":
         order = get_object_or_404(Order, id=order_id)
