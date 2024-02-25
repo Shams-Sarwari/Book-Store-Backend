@@ -6,7 +6,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 
@@ -21,6 +21,7 @@ from .serializers import (
 
 # Create your views here.
 @api_view(["GET"])
+@permission_classes([IsAdminUser])
 def profile_list(request):
     if request.method == "GET":
         queryset = Profile.objects.all()
@@ -30,6 +31,7 @@ def profile_list(request):
 
 
 @api_view(["GET", "PUT", "DELETE"])
+@permission_classes([IsAdminUser])
 def profile_detail(request, pk):
     profile = get_object_or_404(Profile, id=pk)
     if request.method == "GET":
@@ -64,6 +66,7 @@ def register_user(request):
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def logout_user(request):
     if request.user.is_authenticated:
         request.user.auth_token.delete()
@@ -109,6 +112,7 @@ class GoogleSocialAuthView(GenericAPIView):
 
 
 @api_view(["GET"])
+@permission_classes([IsAdminUser])
 def total_users(request):
     previous_users_count = User.objects.exclude(date_joined__date=date.today()).count()
     all_users = User.objects.all().count()
