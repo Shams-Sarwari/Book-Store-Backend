@@ -1,5 +1,6 @@
 from books.utils import paginate_items
 from datetime import date
+from django.db import connection
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -27,7 +28,8 @@ def profile_list(request):
         queryset = Profile.objects.all()
         queryset = paginate_items(request, queryset, 8)
         serialized_data = ProfileSerializer(queryset, many=True)
-        return Response(serialized_data.data)
+        data = Response(serialized_data.data)
+        return data
 
 
 @api_view(["GET", "PUT", "DELETE"])
