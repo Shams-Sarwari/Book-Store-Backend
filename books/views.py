@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.db import connection
 from django.db.models import Q
 from django.utils.text import slugify
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -97,6 +98,7 @@ def bookline_list(request, book_id=None):
             queryset = BookLine.objects.filter(book__in=related_books, add_to_page=True)
         else:
             queryset = BookLine.objects.filter(add_to_page=True)
+
         result = 8
         query = request.query_params.get("query", None)
         if query:

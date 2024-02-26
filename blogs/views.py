@@ -1,4 +1,6 @@
 from books.utils import paginate_items
+from django.db import connection
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from django.utils.text import slugify
 from rest_framework import status
@@ -28,9 +30,13 @@ def posts(request):
             queryset = search_items(search_text, Post.objects.all())
         else:
             queryset = Post.objects.all()
+        queryset = queryset.select_related("profile").prefetch_related(
+            Prefetch("post_images")
+        )
         queryset = paginate_items(request, queryset, 6)
         serialized_data = PostSerializer(queryset, many=True)
         return Response(serialized_data.data)
+
     if request.method == "POST":
         serialized_data = PostSerializer(data=request.data)
         if serialized_data.is_valid():
@@ -55,6 +61,7 @@ def posts(request):
 @admin_owner_or_readonly_post
 def post(request, post_slug):
     post = get_object_or_404(Post, slug=post_slug)
+
     if request.method == "GET":
         serialized_data = PostSerializer(post)
         return Response(serialized_data.data)
@@ -83,6 +90,9 @@ def post_reviews(request, post_slug):
     post = get_object_or_404(Post, slug=post_slug)
     if request.method == "GET":
         reviews = Review.objects.filter(post=post)
+        reviews = reviews.select_related("profile").prefetch_related(
+            Prefetch("post_replies")
+        )
         serialized_data = ReviewSerializer(reviews, many=True)
         return Response(serialized_data.data)
 
@@ -128,7 +138,8 @@ def review_detail(request, review_id):
 def replies(request, review_id):
     review = get_object_or_404(Review, id=review_id)
     if request.method == "GET":
-        queryset = review.post_replies.all()
+        queryset = Reply.objects.filter(review=review).select_related("profile")
+
         serialzied_data = ReplySerializer(queryset, many=True)
         return Response(serialzied_data.data)
 
