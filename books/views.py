@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.db import connection
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.utils.text import slugify
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from rest_framework.response import Response
@@ -29,6 +29,7 @@ def category_list(request):
         cateogories = paginate_items(request, cateogories, 8)
         serialized_data = CategorySerializer(cateogories, many=True)
         return Response(serialized_data.data)
+
     if request.method == "POST":
         serialized_data = CategorySerializer(data=request.data)
         if serialized_data.is_valid():
@@ -42,7 +43,11 @@ def category_list(request):
 @api_view(["GET"])
 def category_books(request, category_id):
     category = get_object_or_404(Category, id=category_id)
-    booklines = BookLine.objects.filter(book__category=category, add_to_page=True)
+    booklines = (
+        BookLine.objects.filter(book__category=category, add_to_page=True)
+        .select_related("book")
+        .select_related("book__author")
+    )
     serialized_data = BookLineSerializer(booklines, many=True)
     return Response(serialized_data.data)
 
@@ -56,7 +61,9 @@ def test(request):
 @permission_classes([AdminOrReadOnly])
 def book_list(request):
     if request.method == "GET":
-        queryset = Book.objects.all()
+        queryset = (
+            Book.objects.all().select_related("author").select_related("category")
+        )
         serialized_data = BookSerializer(queryset, many=True)
         return Response(serialized_data.data)
 
@@ -95,10 +102,17 @@ def bookline_list(request, book_id=None):
         search = request.query_params.get("search", None)
         if search:
             related_books = search_items(search, Book.objects.all())
-            queryset = BookLine.objects.filter(book__in=related_books, add_to_page=True)
+            queryset = (
+                BookLine.objects.filter(book__in=related_books, add_to_page=True)
+                .select_related("book")
+                .select_related("book_author")
+            )
         else:
-            queryset = BookLine.objects.filter(add_to_page=True)
-
+            queryset = (
+                BookLine.objects.filter(add_to_page=True)
+                .select_related("book")
+                .select_related("book__author")
+            )
         result = 8
         query = request.query_params.get("query", None)
         if query:
@@ -141,8 +155,10 @@ def bookline_detail(request, pk):
 @api_view(["GET"])
 def related_books(request, pk):
     category = get_object_or_404(Category, id=pk)
-    booklines = BookLine.objects.filter(
-        Q(book__category=category) & Q(add_to_page=True)
+    booklines = (
+        BookLine.objects.filter(Q(book__category=category) & Q(add_to_page=True))
+        .select_related("book")
+        .select_related("book__author")
     )
     if len(booklines) < 10:
         queryset = booklines
@@ -156,8 +172,11 @@ def related_books(request, pk):
 @api_view(["GET"])
 def related_booklines(request, pk):
     bookline = get_object_or_404(BookLine, id=pk)
-    related_booklines = BookLine.objects.filter(book=bookline.book).exclude(
-        id=bookline.id
+    related_booklines = (
+        BookLine.objects.filter(book=bookline.book)
+        .exclude(id=bookline.id)
+        .select_related("book")
+        .select_related("book__author")
     )
 
     serialized_data = BookLineSerializer(related_booklines, many=True)
@@ -169,7 +188,11 @@ def related_booklines(request, pk):
 def book_reviews(request, book_slug):
     book = get_object_or_404(Book, slug=book_slug)
     if request.method == "GET":
-        reviews = Review.objects.filter(book=book)
+        reviews = (
+            Review.objects.filter(book=book)
+            .select_related("profile")
+            .prefetch_related(Prefetch("replies"))
+        )
         serialized_data = ReviewSerializer(reviews, many=True)
         return Response(serialized_data.data)
 
@@ -222,7 +245,7 @@ def review_detail(request, review_id):
 def replies(request, review_id):
     review = get_object_or_404(Review, id=review_id)
     if request.method == "GET":
-        queryset = review.replies.all()
+        queryset = Reply.objects.filter(review=review).select_related("profile")
         serialzied_data = ReplySerializer(queryset, many=True)
         return Response(serialzied_data.data)
 
