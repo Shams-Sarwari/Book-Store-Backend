@@ -73,3 +73,18 @@ class Profile(models.Model):
 
     def __str__(self) -> str:
         return self.user.email
+
+
+class Contact(models.Model):
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    message = models.TextField()
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created"]
+        indexes = [models.Index(fields=["-created"])]
+
+    def __str__(self) -> str:
+        return f"{self.first_name} {self.last_name}"

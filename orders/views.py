@@ -1,4 +1,6 @@
 from django.shortcuts import get_object_or_404
+from django.db import connection
+from django.db.models import Prefetch
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -14,8 +16,15 @@ from .permissions import is_cart_owner, is_wishlist_owner
 def cart_items(request, bookline_id=None):
     user_cart = get_object_or_404(Cart, profile=request.user.profile)
     if request.method == "GET":
-        queryset = CartItem.objects.filter(cart=user_cart)
+        queryset = (
+            CartItem.objects.filter(cart=user_cart)
+            .select_related("book_line")
+            .select_related("book_line__book")
+            .select_related("book_line__book__author")
+        )
+
         serialized_data = CartItemSerializer(queryset, many=True)
+
         return Response(serialized_data.data)
 
     if request.method == "POST":
@@ -94,8 +103,14 @@ def cart_item(request, cartitem_id):
 def wishlist_items(request, bookline_id=None):
     user_wishlist = request.user.profile.wishlist
     if request.method == "GET":
-        items = WishlistItem.objects.filter(wishlist=user_wishlist)
+        items = (
+            WishlistItem.objects.filter(wishlist=user_wishlist)
+            .select_related("book_line")
+            .select_related("book_line__book")
+            .select_related("book_line__book__category")
+        )
         serialized_data = WishlistItemsSerializer(items, many=True)
+
         return Response(serialized_data.data)
 
     if request.method == "POST":
@@ -131,7 +146,9 @@ def orders(request):
         if query == "pending":
             queryset = Order.objects.filter(derlivered=False)
     else:
-        queryset = Order.objects.all()
+        queryset = (
+            Order.objects.all().select_related("profile").prefetch_related("address")
+        )
     serialized_data = OrderSerializer(queryset, many=True)
     return Response(serialized_data.data)
 
