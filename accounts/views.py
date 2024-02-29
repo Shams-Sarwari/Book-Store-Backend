@@ -11,13 +11,15 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 
-from .models import Profile, User
+from .models import Profile, User, Contact
 from .serializers import (
     ProfileSerializer,
     UserSerializer,
     PasswordChangeSerializer,
     GoogleSocialAuthSerializer,
+    ContactSerializer,
 )
+from .permissions import PostOnly
 
 
 # Create your views here.
@@ -125,3 +127,43 @@ def total_users(request):
         },
         status=status.HTTP_200_OK,
     )
+
+
+@api_view(["GET", "POST"])
+@permission_classes([PostOnly])
+def contact_messages(request):
+    if request.method == "GET":
+        query = request.query_params.get("query")
+        if query and query == "unread":
+            queryset = Contact.objects.filter(read_by_admin=False)
+        else:
+            queryset = Contact.objects.all()
+        serialized_data = ContactSerializer(queryset, many=True)
+        return Response(serialized_data.data, status=status.HTTP_200_OK)
+    if request.method == "POST":
+        serialized_data = ContactSerializer(data=request.data)
+        if serialized_data.is_valid():
+            serialized_data.save()
+            return Response(serialized_data.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serialized_data.errors)
+
+
+@api_view(["DELETE", "PATCH"])
+@permission_classes([IsAdminUser])
+def message(request, message_id):
+    queryset = get_object_or_404(Contact, id=message_id)
+    if request.method == "DELETE":
+        queryset.delete()
+        return Response({"message": "Message deleted"}, status=status.HTTP_200_OK)
+    if request.method == "PATCH":
+        queryset.read_by_admin = True
+        queryset.save()
+        return Response({"message": "Message updated"}, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@permission_classes([IsAdminUser])
+def number_of_unread_messages(request):
+    queryset = Contact.objects.all().count()
+    return Response({"number": queryset}, status=status.HTTP_200_OK)
