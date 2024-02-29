@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from .models import Profile
-from accounts.models import User
+from accounts.models import User, Contact
 from .register import register_social_user
 
 import google
@@ -92,3 +92,9 @@ class GoogleSocialAuthSerializer(serializers.Serializer):
         provider = "google"
 
         return register_social_user(email=user_email, provider=provider)
+
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = "__all__"

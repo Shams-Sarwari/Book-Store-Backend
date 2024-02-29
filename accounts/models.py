@@ -80,6 +80,7 @@ class Contact(models.Model):
     last_name = models.CharField(max_length=255)
     email = models.EmailField()
     message = models.TextField()
+    read_by_admin = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
